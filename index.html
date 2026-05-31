@@ -1,699 +1,548 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Tracker" />
-  <meta name="theme-color" content="#0A0A0F" />
-  <title>Progress Tracker</title>
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./icon-192.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html, body, #root { height: 100%; }
-    body { background: #0A0A0F; color: #E8E8F0; font-family: 'DM Mono', 'Courier New', monospace; overscroll-behavior: none; }
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-track { background: #0A0A0F; }
-    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes toastIn { from { opacity:0; transform:translateX(110%); } to { opacity:1; transform:translateX(0); } }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    .slide-up { animation: slideUp 0.3s ease both; }
-    .toast-anim { animation: toastIn 0.3s ease; }
-    .fade-in { animation: fadeIn 0.25s ease; }
-  </style>
-</head>
-<body>
-<div id="root"></div>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script>
-const { useState, useEffect, useRef } = React;
-
-const C = {
-  bg: "#0A0A0F", card: "#111", border: "#1a1a1a",
-  text: "#E8E8F0", muted: "#555", dim: "#333",
-};
+import { useState, useEffect } from "react";
 
 const ROUTINE = {
   "Upper A": {
-    day: "Lunes", color: "#FF6B35",
+    day: "Lunes",
+    time: "11:00 / 14:00",
+    color: "#FF6B35",
     exercises: [
-      { id:"ua1", name:"Press inclinado mancuernas 30°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ua2", name:"Jalón agarre prono amplio", sets:3, reps:"10-12", iw:15, unit:"discos", type:"comp" },
-      { id:"ua3", name:"Press militar mancuernas 80°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ua4", name:"Remo barra T agarre prono", sets:3, reps:"10-12", iw:55, unit:"kg total", type:"comp" },
-      { id:"ua5", name:"Aperturas banco plano 0°", sets:2, reps:"10-12", iw:15, unit:"kg/manc", type:"aisl" },
-      { id:"ua6", name:"Elevaciones laterales", sets:3, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
-      { id:"ua7", name:"Curl araña mancuernas 45°", sets:3, reps:"10-12", iw:15, unit:"kg/manc", type:"aisl" },
-      { id:"ua8", name:"Extensión tríceps overhead polea", sets:3, reps:"10-12", iw:10, unit:"discos", type:"aisl" },
+      { id: "ua1", name: "Press inclinado con mancuernas 30°", sets: 3, reps: "10-12", initialWeight: 25, unit: "kg/mancuerna", type: "compuesto" },
+      { id: "ua2", name: "Jalón al pecho agarre prono amplio", sets: 3, reps: "10-12", initialWeight: 15, unit: "discos", type: "compuesto" },
+      { id: "ua3", name: "Press militar con mancuernas 80°", sets: 3, reps: "10-12", initialWeight: 25, unit: "kg/mancuerna", type: "compuesto" },
+      { id: "ua4", name: "Remo pecho barra T agarre prono", sets: 3, reps: "10-12", initialWeight: 55, unit: "kg total", type: "compuesto" },
+      { id: "ua5", name: "Aperturas banco plano 0°", sets: 2, reps: "10-12", initialWeight: 15, unit: "kg/mancuerna", type: "aislado" },
+      { id: "ua6", name: "Elevaciones laterales", sets: 3, reps: "12-15", initialWeight: 10, unit: "kg/mancuerna", type: "aislado" },
+      { id: "ua7", name: "Curl araña con mancuernas 45°", sets: 3, reps: "10-12", initialWeight: 15, unit: "kg/mancuerna", type: "aislado" },
+      { id: "ua8", name: "Extensión tríceps overhead polea", sets: 3, reps: "10-12", initialWeight: 10, unit: "discos", type: "aislado" },
     ]
   },
   "Lower A": {
-    day: "Miércoles", color: "#4ECDC4",
+    day: "Miércoles",
+    time: "11:00 / 14:00",
+    color: "#4ECDC4",
     exercises: [
-      { id:"la1", name:"Sentadilla búlgara mancuernas", sets:3, reps:"10-12", iw:20, unit:"kg/manc", type:"comp" },
-      { id:"la2", name:"Hip thrust con barra", sets:3, reps:"10-12", iw:90, unit:"kg total", type:"comp" },
-      { id:"la3", name:"Extensión cuádriceps máquina", sets:3, reps:"10-12", iw:9, unit:"discos", type:"aisl" },
-      { id:"la4", name:"Curl femoral sentado", sets:3, reps:"10-12", iw:13, unit:"discos", type:"aisl" },
-      { id:"la5", name:"Elevación de gemelos con barra", sets:3, reps:"12-15", iw:125, unit:"kg total", type:"comp" },
-      { id:"la6", name:"Crunch cuerda polea alta", sets:3, reps:"12-15", iw:15, unit:"discos", type:"aisl" },
-      { id:"la7", name:"Curl de muñeca detrás espalda", sets:3, reps:"12-15", iw:40, unit:"kg total", type:"aisl" },
-      { id:"la8", name:"Pájaros banco inclinado 45°", sets:2, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
+      { id: "la1", name: "Sentadilla búlgara con mancuernas", sets: 3, reps: "10-12", initialWeight: 20, unit: "kg/mancuerna", type: "compuesto" },
+      { id: "la2", name: "Hip thrust con barra", sets: 3, reps: "10-12", initialWeight: 90, unit: "kg total", type: "compuesto" },
+      { id: "la3", name: "Extensión de cuádriceps en máquina", sets: 3, reps: "10-12", initialWeight: 9, unit: "discos", type: "aislado" },
+      { id: "la4", name: "Curl femoral sentado", sets: 3, reps: "10-12", initialWeight: 13, unit: "discos", type: "aislado" },
+      { id: "la5", name: "Elevación de gemelos con barra", sets: 3, reps: "12-15", initialWeight: 125, unit: "kg total", type: "compuesto" },
+      { id: "la6", name: "Crunch cuerda polea alta", sets: 3, reps: "12-15", initialWeight: 15, unit: "discos", type: "aislado" },
+      { id: "la7", name: "Curl de muñeca detrás espalda", sets: 3, reps: "12-15", initialWeight: 40, unit: "kg total", type: "aislado" },
+      { id: "la8", name: "Pájaros banco inclinado 45°", sets: 2, reps: "12-15", initialWeight: 10, unit: "kg/mancuerna", type: "aislado" },
     ]
   },
   "Upper B": {
-    day: "Viernes", color: "#A855F7",
+    day: "Viernes",
+    time: "11:00 / 14:00",
+    color: "#A855F7",
     exercises: [
-      { id:"ub1", name:"Press militar mancuernas 80°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ub2", name:"Jalón agarre supino cerrado", sets:3, reps:"10-12", iw:15, unit:"discos", type:"comp" },
-      { id:"ub3", name:"Press plano mancuernas 0°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ub4", name:"Remo barra T agarre V semi-neutro", sets:3, reps:"10-12", iw:55, unit:"kg total", type:"comp" },
-      { id:"ub5", name:"Aperturas banco inclinado 30°", sets:2, reps:"10-12", iw:15, unit:"kg/manc", type:"aisl" },
-      { id:"ub6", name:"Elevaciones laterales", sets:3, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
-      { id:"ub7", name:"Curl bíceps inclinado 45°", sets:3, reps:"10-12", iw:17.5, unit:"kg/manc", type:"aisl" },
-      { id:"ub8", name:"Extensión tríceps pushdown 45°", sets:3, reps:"10-12", iw:11, unit:"discos", type:"aisl" },
+      { id: "ub1", name: "Press militar con mancuernas 80°", sets: 3, reps: "10-12", initialWeight: 25, unit: "kg/mancuerna", type: "compuesto" },
+      { id: "ub2", name: "Jalón agarre supino cerrado", sets: 3, reps: "10-12", initialWeight: 15, unit: "discos", type: "compuesto" },
+      { id: "ub3", name: "Press plano con mancuernas 0°", sets: 3, reps: "10-12", initialWeight: 25, unit: "kg/mancuerna", type: "compuesto" },
+      { id: "ub4", name: "Remo barra T agarre V semi-neutro", sets: 3, reps: "10-12", initialWeight: 55, unit: "kg total", type: "compuesto" },
+      { id: "ub5", name: "Aperturas banco inclinado 30°", sets: 2, reps: "10-12", initialWeight: 15, unit: "kg/mancuerna", type: "aislado" },
+      { id: "ub6", name: "Elevaciones laterales", sets: 3, reps: "12-15", initialWeight: 10, unit: "kg/mancuerna", type: "aislado" },
+      { id: "ub7", name: "Curl bíceps inclinado 45°", sets: 3, reps: "10-12", initialWeight: 17.5, unit: "kg/mancuerna", type: "aislado" },
+      { id: "ub8", name: "Extensión tríceps pushdown 45°", sets: 3, reps: "10-12", initialWeight: 11, unit: "discos", type: "aislado" },
     ]
   },
   "Lower B": {
-    day: "Domingo", color: "#F59E0B",
+    day: "Domingo",
+    time: "11:00 / 14:00",
+    color: "#F59E0B",
     exercises: [
-      { id:"lb1", name:"Hip thrust con barra", sets:3, reps:"10-12", iw:90, unit:"kg total", type:"comp" },
-      { id:"lb2", name:"Sentadilla búlgara mancuernas", sets:3, reps:"10-12", iw:20, unit:"kg/manc", type:"comp" },
-      { id:"lb3", name:"Curl femoral tumbado", sets:3, reps:"10-12", iw:10, unit:"discos", type:"aisl" },
-      { id:"lb4", name:"Extensión cuádriceps máquina", sets:3, reps:"10-12", iw:9, unit:"discos", type:"aisl" },
-      { id:"lb5", name:"Elevación de gemelos con barra", sets:3, reps:"12-15", iw:125, unit:"kg total", type:"comp" },
-      { id:"lb6", name:"Crunch cuerda polea alta", sets:3, reps:"12-15", iw:15, unit:"discos", type:"aisl" },
-      { id:"lb7", name:"Curl de muñeca invertido sentado", sets:3, reps:"12-15", iw:20, unit:"kg total", type:"aisl" },
-      { id:"lb8", name:"Pájaros banco inclinado 45°", sets:2, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
+      { id: "lb1", name: "Hip thrust con barra", sets: 3, reps: "10-12", initialWeight: 90, unit: "kg total", type: "compuesto" },
+      { id: "lb2", name: "Sentadilla búlgara con mancuernas", sets: 3, reps: "10-12", initialWeight: 20, unit: "kg/mancuerna", type: "compuesto" },
+      { id: "lb3", name: "Curl femoral tumbado", sets: 3, reps: "10-12", initialWeight: 10, unit: "discos", type: "aislado" },
+      { id: "lb4", name: "Extensión de cuádriceps en máquina", sets: 3, reps: "10-12", initialWeight: 9, unit: "discos", type: "aislado" },
+      { id: "lb5", name: "Elevación de gemelos con barra", sets: 3, reps: "12-15", initialWeight: 125, unit: "kg total", type: "compuesto" },
+      { id: "lb6", name: "Crunch cuerda polea alta", sets: 3, reps: "12-15", initialWeight: 15, unit: "discos", type: "aislado" },
+      { id: "lb7", name: "Curl de muñeca invertido sentado", sets: 3, reps: "12-15", initialWeight: 20, unit: "kg total", type: "aislado" },
+      { id: "lb8", name: "Pájaros banco inclinado 45°", sets: 2, reps: "12-15", initialWeight: 10, unit: "kg/mancuerna", type: "aislado" },
     ]
   }
 };
 
-const DAYS = ["Upper A","Lower A","Upper B","Lower B"];
+const WEEK_DAYS = ["Upper A", "Lower A", "Upper B", "Lower B"];
 
-function ls(k, def) { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : def; } catch { return def; } }
-function lss(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
-
-function initWeights() {
+function getInitialWeights() {
   const w = {};
-  Object.values(ROUTINE).forEach(r => r.exercises.forEach(e => { w[e.id] = e.iw; }));
+  Object.values(ROUTINE).forEach(r => r.exercises.forEach(e => { w[e.id] = e.initialWeight; }));
   return w;
 }
 
-// ─── SET LOG MODAL ────────────────────────────────────────────────────
-function LogModal({ ex, setIdx, color, currentWeight, onConfirm, onClose }) {
-  const [weight, setWeight] = useState(String(currentWeight));
-  const [reps, setReps] = useState("");
-  const repsRef = useRef(null);
-  useEffect(() => { setTimeout(() => repsRef.current?.focus(), 100); }, []);
-
-  const confirm = () => { if (!reps) return; onConfirm(parseFloat(weight)||0, parseInt(reps)||0); };
-
-  return React.createElement("div", {
-    className:"fade-in",
-    onClick: onClose,
-    style:{ position:"fixed", inset:0, zIndex:200, background:"rgba(0,0,0,0.88)", display:"flex", alignItems:"flex-end", justifyContent:"center" }
-  },
-    React.createElement("div", {
-      onClick: e => e.stopPropagation(),
-      className:"slide-up",
-      style:{ background:"#141414", borderRadius:"20px 20px 0 0", padding:"24px 20px 40px",
-        width:"100%", maxWidth:"480px", borderTop:`3px solid ${color}` }
-    },
-      React.createElement("p", { style:{ fontSize:10, color:C.muted, letterSpacing:"0.25em", marginBottom:4 } },
-        `SERIE ${setIdx+1} · ${ex.type === "comp" ? "COMPUESTO" : "AISLADO"}`),
-      React.createElement("p", { style:{ fontSize:13, color:"#ddd", marginBottom:22, lineHeight:1.4 } }, ex.name),
-      React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 } },
-        React.createElement("div", null,
-          React.createElement("label", { style:{ fontSize:9, color:C.muted, letterSpacing:"0.2em", display:"block", marginBottom:6 } }, `PESO (${ex.unit})`),
-          React.createElement("input", {
-            type:"number", value:weight, inputMode:"decimal",
-            onChange: e => setWeight(e.target.value),
-            style:{ width:"100%", padding:"12px 8px", borderRadius:8, fontSize:22,
-              fontFamily:"'Bebas Neue',sans-serif", background:"#1c1c1c",
-              border:`1.5px solid ${color}55`, color:color, textAlign:"center", outline:"none" }
-          })
-        ),
-        React.createElement("div", null,
-          React.createElement("label", { style:{ fontSize:9, color:C.muted, letterSpacing:"0.2em", display:"block", marginBottom:6 } }, `REPS (${ex.reps})`),
-          React.createElement("input", {
-            ref: repsRef, type:"number", value:reps, inputMode:"numeric",
-            onChange: e => setReps(e.target.value),
-            onKeyDown: e => e.key==="Enter" && confirm(),
-            style:{ width:"100%", padding:"12px 8px", borderRadius:8, fontSize:22,
-              fontFamily:"'Bebas Neue',sans-serif", background:"#1c1c1c",
-              border:"1.5px solid #2a2a2a", color:"#fff", textAlign:"center", outline:"none" }
-          })
-        )
-      ),
-      React.createElement("button", {
-        onClick: confirm,
-        style:{ width:"100%", padding:14, borderRadius:10, fontSize:11,
-          letterSpacing:"0.3em", textTransform:"uppercase",
-          background:color, color:"#000", border:"none", cursor:"pointer",
-          fontFamily:"inherit", fontWeight:600 }
-      }, "CONFIRMAR SERIE")
-    )
-  );
+function getInitialHistory() {
+  return {};
 }
 
-// ─── EXERCISE CARD ────────────────────────────────────────────────────
-function ExerciseCard({ ex, color, weight, sessionLog, completedSets, onLogSet, deload }) {
-  const sets = deload ? Math.max(2, ex.sets - 1) : ex.sets;
-  const setsArr = Array.from({ length: sets }, (_, i) => i);
-  const allDone = setsArr.every(i => completedSets[`${ex.id}-${i}`]);
-
-  return React.createElement("div", {
-    style:{
-      background: allDone ? "#0c1a0c" : C.card,
-      border:`1px solid ${allDone ? "#1e3a1e" : C.border}`,
-      borderRadius:12, padding:"13px 14px", transition:"all 0.3s"
-    }
-  },
-    React.createElement("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 } },
-      React.createElement("div", { style:{ flex:1, paddingRight:10 } },
-        React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:6, marginBottom:4 } },
-          React.createElement("span", {
-            style:{ fontSize:8, padding:"2px 6px", borderRadius:4, letterSpacing:"0.1em",
-              background: ex.type==="comp" ? "#15153a" : "#1a1a1a",
-              color: ex.type==="comp" ? "#6B8EFF" : C.muted }
-          }, ex.type==="comp" ? "COMPUESTO" : "AISLADO"),
-          allDone && React.createElement("span", { style:{ fontSize:11, color:"#4ade80" } }, "✓")
-        ),
-        React.createElement("p", { style:{ fontSize:12, color: allDone ? "#4ade80" : "#ccc", lineHeight:1.4 } }, ex.name)
-      ),
-      React.createElement("div", { style:{ textAlign:"right", flexShrink:0 } },
-        React.createElement("p", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color, lineHeight:1 } }, weight),
-        React.createElement("p", { style:{ fontSize:8, color:"#3a3a3a", letterSpacing:"0.1em", marginTop:1 } }, ex.unit)
-      )
-    ),
-    React.createElement("div", { style:{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" } },
-      React.createElement("span", { style:{ fontSize:9, color:"#3a3a3a", letterSpacing:"0.12em" } }, ex.reps+" rep"),
-      ...setsArr.map(i => {
-        const key = `${ex.id}-${i}`;
-        const done = completedSets[key];
-        const logData = sessionLog[key];
-        return React.createElement("button", {
-          key:i,
-          onClick: () => onLogSet(ex.id, i),
-          style:{
-            width:46, height:38, borderRadius:7, fontSize:9,
-            border: done ? "none" : `1px solid #252525`,
-            background: done ? color : "#181818",
-            color: done ? "#000" : C.muted, cursor:"pointer",
-            display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-            lineHeight:1.2, fontFamily:"inherit", transition:"all 0.15s"
-          }
-        },
-          done
-            ? [React.createElement("span", { key:"r", style:{ fontSize:11, fontWeight:600 } }, logData?.reps),
-               React.createElement("span", { key:"w", style:{ fontSize:7 } }, logData?.weight)]
-            : React.createElement("span", { key:"s", style:{ letterSpacing:"0.1em" } }, `S${i+1}`)
-        );
-      }),
-      React.createElement("span", { style:{ fontSize:9, color:"#2a2a2a", marginLeft:"auto" } },
-        ex.type==="comp" ? "3' desc" : "2' desc"
-      )
-    )
-  );
-}
-
-// ─── MAIN APP ─────────────────────────────────────────────────────────
-function App() {
-  const [tab, setTab] = useState("workout");
+export default function FitnessTracker() {
   const [activeDay, setActiveDay] = useState("Upper A");
-  const [weights, setWeights] = useState(() => ls("ft_weights", null) || initWeights());
-  const [history, setHistory] = useState(() => ls("ft_history", {}));
-  const [weekNum, setWeekNum] = useState(() => ls("ft_week", 1));
+  const [view, setView] = useState("workout"); // "workout" | "history" | "overview"
+  const [weights, setWeights] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("ft_weights")) || getInitialWeights(); } catch { return getInitialWeights(); }
+  });
+  const [history, setHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("ft_history")) || {}; } catch { return {}; }
+  });
+  const [weekCount, setWeekCount] = useState(() => {
+    try { return parseInt(localStorage.getItem("ft_weeks")) || 1; } catch { return 1; }
+  });
   const [sessionLog, setSessionLog] = useState({});
   const [completedSets, setCompletedSets] = useState({});
-  const [logging, setLogging] = useState(null); // { exId, setIdx }
+  const [logging, setLogging] = useState(null);
+  const [logInput, setLogInput] = useState({ weight: "", reps: "" });
   const [toast, setToast] = useState(null);
-  const [showInstall, setShowInstall] = useState(false);
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
-  useEffect(() => { lss("ft_weights", weights); }, [weights]);
-  useEffect(() => { lss("ft_history", history); }, [history]);
-  useEffect(() => { lss("ft_week", weekNum); }, [weekNum]);
+  useEffect(() => { localStorage.setItem("ft_weights", JSON.stringify(weights)); }, [weights]);
+  useEffect(() => { localStorage.setItem("ft_history", JSON.stringify(history)); }, [history]);
+  useEffect(() => { localStorage.setItem("ft_weeks", weekCount); }, [weekCount]);
 
-  const isDeload = weekNum % 6 === 0;
-  const dayColor = ROUTINE[activeDay].color;
-  const exercises = ROUTINE[activeDay].exercises;
-
-  const allSets = exercises.reduce((a,e) => a + (isDeload ? Math.max(2,e.sets-1) : e.sets), 0);
-  const doneSets = Object.keys(completedSets).filter(k => exercises.some(e => k.startsWith(e.id))).length;
-  const pct = allSets > 0 ? Math.round(doneSets/allSets*100) : 0;
-
-  const showToast = (msg, type="ok") => {
+  const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 3000);
   };
 
   const handleLogSet = (exId, setIdx) => {
-    const ex = exercises.find(e => e.id === exId);
-    setLogging({ exId, setIdx, ex });
+    setLogging({ exId, setIdx });
+    const prev = sessionLog[`${exId}-${setIdx}`];
+    const ex = Object.values(ROUTINE).flatMap(r => r.exercises).find(e => e.id === exId);
+    setLogInput({ weight: prev?.weight || weights[exId] || ex.initialWeight, reps: prev?.reps || "" });
   };
 
-  const confirmLog = (weight, reps) => {
-    if (!logging) return;
+  const confirmLog = () => {
+    if (!logInput.reps) return;
     const key = `${logging.exId}-${logging.setIdx}`;
-    setSessionLog(prev => ({ ...prev, [key]: { weight, reps } }));
+    const newLog = { ...sessionLog, [key]: { weight: parseFloat(logInput.weight), reps: parseInt(logInput.reps) } };
+    setSessionLog(newLog);
     setCompletedSets(prev => ({ ...prev, [key]: true }));
 
-    if (logging.setIdx === 0 && reps >= 12) {
-      const newW = parseFloat((weight + 2.5).toFixed(1));
-      setWeights(prev => ({ ...prev, [logging.exId]: newW }));
-      showToast(`💪 ¡Sobrecarga! Nuevo peso: ${newW} ${logging.ex.unit}`, "progress");
+    // Check progressive overload: first set, 12 reps, RIR 0
+    if (logging.setIdx === 0 && parseInt(logInput.reps) >= 12) {
+      const ex = Object.values(ROUTINE).flatMap(r => r.exercises).find(e => e.id === logging.exId);
+      const newWeight = parseFloat(logInput.weight) + 2.5;
+      setWeights(prev => ({ ...prev, [logging.exId]: newWeight }));
+      showToast(`💪 Sobrecarga progresiva! Peso sugerido: ${newWeight} ${ex.unit}`, "progress");
     }
     setLogging(null);
   };
 
   const finishWorkout = () => {
-    const entry = { date: new Date().toLocaleDateString("es-AR"), day: activeDay, log: {...sessionLog} };
+    const date = new Date().toLocaleDateString("es-AR");
+    const entry = { date, day: activeDay, log: { ...sessionLog } };
     setHistory(prev => ({ ...prev, [Date.now()]: entry }));
     setSessionLog({});
     setCompletedSets({});
-    showToast("✅ Entrenamiento guardado");
+    showToast("✅ Entrenamiento guardado!", "success");
   };
 
-  const changeDay = d => { setActiveDay(d); setSessionLog({}); setCompletedSets({}); };
+  const totalCompleted = Object.keys(completedSets).filter(k => k.startsWith(
+    ROUTINE[activeDay]?.exercises.map(e => e.id).find(id => k.startsWith(id)) || ""
+  )).length;
 
-  const histEntries = Object.entries(history).sort((a,b) => b[0]-a[0]).slice(0,30);
+  const dayExercises = ROUTINE[activeDay]?.exercises || [];
+  const allSets = dayExercises.reduce((acc, ex) => acc + ex.sets, 0);
+  const doneSets = Object.keys(completedSets).filter(k =>
+    dayExercises.some(ex => k.startsWith(ex.id))
+  ).length;
+  const progress = allSets > 0 ? Math.round((doneSets / allSets) * 100) : 0;
 
-  // ── RENDER ──
-  return React.createElement("div", {
-    style:{ minHeight:"100vh", background:C.bg, position:"relative", overflow:"hidden" }
-  },
-    // BG grid
-    React.createElement("div", { style:{
-      position:"fixed", inset:0, zIndex:0,
-      backgroundImage:`linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)`,
-      backgroundSize:"40px 40px", pointerEvents:"none"
-    }}),
-    // Accent glow
-    React.createElement("div", { style:{
-      position:"fixed", top:-120, right:-120, width:380, height:380,
-      background:`radial-gradient(circle,${dayColor}1a 0%,transparent 70%)`,
-      zIndex:0, transition:"background 0.5s", pointerEvents:"none"
-    }}),
+  const isDeloadWeek = weekCount % 6 === 0;
 
-    // Scrollable content
-    React.createElement("div", {
-      style:{ position:"relative", zIndex:1, maxWidth:480, margin:"0 auto",
-        padding:"env(safe-area-inset-top,16px) 16px 120px", minHeight:"100vh", overflowY:"auto" }
-    },
+  const historyEntries = Object.entries(history).sort((a, b) => b[0] - a[0]).slice(0, 20);
 
-      // ── HEADER ──
-      React.createElement("div", { style:{ marginBottom:22, paddingTop:8 } },
-        React.createElement("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" } },
-          React.createElement("div", null,
-            React.createElement("p", { style:{ fontSize:9, letterSpacing:"0.35em", color:C.muted, textTransform:"uppercase", marginBottom:3 } },
-              `SEMANA ${weekNum}${isDeload ? " · 🔄 DESCARGA" : ""}`
-            ),
-            React.createElement("h1", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:40, letterSpacing:"0.05em", color:"#fff", lineHeight:1 } },
-              "PROGRESS",
-              React.createElement("br"),
-              React.createElement("span", { style:{ color:dayColor } }, "TRACKER")
-            )
-          ),
-          React.createElement("div", { style:{ textAlign:"right" } },
-            React.createElement("p", { style:{ fontSize:9, color:C.muted, letterSpacing:"0.2em" } }, "HOY"),
-            React.createElement("p", { style:{ fontSize:12, color:"#777", marginBottom:6 } },
-              new Date().toLocaleDateString("es-AR",{ weekday:"short", day:"numeric", month:"short" })
-            ),
-            React.createElement("button", {
-              onClick: () => setWeekNum(w => w+1),
-              style:{ fontSize:9, letterSpacing:"0.12em", color:C.muted, cursor:"pointer",
-                border:"1px solid #2a2a2a", borderRadius:4, padding:"3px 8px", background:"none",
-                fontFamily:"inherit", display:"block", marginBottom:5 }
-            }, "+ SEMANA"),
-            !isStandalone && React.createElement("button", {
-              onClick: () => setShowInstall(true),
-              style:{ fontSize:9, letterSpacing:"0.12em", color:"#000", cursor:"pointer",
-                border:"none", borderRadius:4, padding:"4px 8px", background:"#FF6B35",
-                fontFamily:"inherit", fontWeight:600, display:"block", width:"100%" }
-            }, "📲 INSTALAR")
-          )
-        )
-      ),
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#0A0A0F",
+      color: "#E8E8F0",
+      fontFamily: "'DM Mono', 'Courier New', monospace",
+      padding: "0",
+      position: "relative",
+      overflow: "hidden"
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0A0A0F; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        .day-btn { transition: all 0.2s ease; cursor: pointer; border: none; background: none; }
+        .day-btn:hover { transform: translateY(-2px); }
+        .set-btn { transition: all 0.15s ease; cursor: pointer; }
+        .set-btn:hover { transform: scale(1.05); }
+        .nav-btn { transition: all 0.2s; cursor: pointer; border: none; background: none; }
+        .nav-btn:hover { opacity: 0.7; }
+        @keyframes slideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes toastIn { from { opacity:0; transform:translateX(100px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+        .exercise-row { animation: slideIn 0.3s ease both; }
+        .toast { animation: toastIn 0.3s ease; }
+      `}</style>
 
-      // ── TABS ──
-      React.createElement("div", { style:{ display:"flex", gap:4, marginBottom:18, background:"#0f0f0f", borderRadius:10, padding:4 } },
-        ...[["workout","Sesión"],["history","Historial"],["overview","Overview"]].map(([v,l]) =>
-          React.createElement("button", {
-            key:v, onClick: () => setTab(v),
-            style:{ flex:1, padding:"8px 0", fontSize:10, letterSpacing:"0.2em", textTransform:"uppercase",
-              color: tab===v ? "#000" : C.muted,
-              background: tab===v ? "#fff" : "none",
-              borderRadius:7, border:"none", fontFamily:"inherit", cursor:"pointer", transition:"all 0.2s" }
-          }, l)
-        )
-      ),
+      {/* Background grid */}
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 0,
+        backgroundImage: `
+          linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
+        `,
+        backgroundSize: "40px 40px"
+      }} />
 
-      // ══ WORKOUT TAB ══
-      tab==="workout" && React.createElement("div", { className:"fade-in" },
-        // Day selector
-        React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:7, marginBottom:18 } },
-          ...DAYS.map(d => {
-            const info = ROUTINE[d];
-            const active = activeDay===d;
-            return React.createElement("button", {
-              key:d, onClick: () => changeDay(d),
-              style:{ padding:"10px 4px", borderRadius:10, textAlign:"center",
-                background: active ? info.color : "#0f0f0f",
-                border: active ? "none" : "1px solid #181818",
-                color: active ? "#000" : C.muted, cursor:"pointer", transition:"all 0.2s",
-                fontFamily:"inherit" }
-            },
-              React.createElement("div", { style:{ fontSize:8, letterSpacing:"0.08em", marginBottom:2 } }, info.day.toUpperCase()),
-              React.createElement("div", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:13, letterSpacing:"0.04em" } }, d)
-            );
-          })
-        ),
+      {/* Accent blob */}
+      <div style={{
+        position: "fixed", top: "-100px", right: "-100px", width: "400px", height: "400px",
+        background: `radial-gradient(circle, ${ROUTINE[activeDay]?.color}22 0%, transparent 70%)`,
+        zIndex: 0, transition: "background 0.5s ease", pointerEvents: "none"
+      }} />
 
-        // Progress bar
-        React.createElement("div", { style:{ marginBottom:18 } },
-          React.createElement("div", { style:{ display:"flex", justifyContent:"space-between", marginBottom:5 } },
-            React.createElement("span", { style:{ fontSize:9, color:C.muted, letterSpacing:"0.2em" } }, "PROGRESO SESIÓN"),
-            React.createElement("span", { style:{ fontSize:9, color:dayColor } }, `${doneSets}/${allSets} SERIES · ${pct}%`)
-          ),
-          React.createElement("div", { style:{ height:3, background:"#181818", borderRadius:2 } },
-            React.createElement("div", { style:{ height:"100%", width:`${pct}%`, background:dayColor, borderRadius:2, transition:"width 0.5s ease" } })
-          )
-        ),
+      <div style={{ position: "relative", zIndex: 1, maxWidth: "480px", margin: "0 auto", padding: "16px 16px 120px" }}>
 
-        // Exercises
-        React.createElement("div", { style:{ display:"flex", flexDirection:"column", gap:9, marginBottom:16 } },
-          ...exercises.map((ex, idx) =>
-            React.createElement("div", { key:ex.id, className:"slide-up", style:{ animationDelay:`${idx*0.04}s` } },
-              React.createElement(ExerciseCard, {
-                ex, color:dayColor, weight:weights[ex.id],
-                sessionLog, completedSets, onLogSet:handleLogSet, deload:isDeload
-              })
-            )
-          )
-        ),
+        {/* Header */}
+        <div style={{ marginBottom: "24px", paddingTop: "8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <p style={{ fontSize: "10px", letterSpacing: "0.3em", color: "#555", textTransform: "uppercase", marginBottom: "4px" }}>
+                SEMANA {weekCount} {isDeloadWeek && "· 🔄 DESCARGA"}
+              </p>
+              <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "42px", letterSpacing: "0.05em", color: "#fff", lineHeight: 1 }}>
+                PROGRESS<br /><span style={{ color: ROUTINE[activeDay]?.color }}>TRACKER</span>
+              </h1>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <p style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2em" }}>HOY</p>
+              <p style={{ fontSize: "13px", color: "#888" }}>{new Date().toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" })}</p>
+              <button onClick={() => setWeekCount(w => w + 1)} style={{
+                marginTop: "6px", fontSize: "9px", letterSpacing: "0.15em", color: "#555", cursor: "pointer",
+                border: "1px solid #333", borderRadius: "4px", padding: "3px 8px", background: "none"
+              }}>+ SEMANA</button>
+            </div>
+          </div>
+        </div>
 
-        // Finish button
-        doneSets > 0 && React.createElement("button", {
-          onClick: finishWorkout,
-          style:{ width:"100%", padding:15, borderRadius:12, fontSize:11,
-            letterSpacing:"0.3em", textTransform:"uppercase",
-            background:dayColor, color:"#000", border:"none", cursor:"pointer",
-            fontFamily:"inherit", fontWeight:600 }
-        }, `GUARDAR ENTRENAMIENTO · ${pct}%`)
-      ),
+        {/* Nav */}
+        <div style={{ display: "flex", gap: "4px", marginBottom: "20px", background: "#111", borderRadius: "10px", padding: "4px" }}>
+          {["workout", "history", "overview"].map(v => (
+            <button key={v} className="nav-btn" onClick={() => setView(v)} style={{
+              flex: 1, padding: "8px 0", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase",
+              color: view === v ? "#000" : "#555",
+              background: view === v ? "#fff" : "none",
+              borderRadius: "7px", fontFamily: "inherit", transition: "all 0.2s"
+            }}>
+              {v === "workout" ? "Sesión" : v === "history" ? "Historial" : "Overview"}
+            </button>
+          ))}
+        </div>
 
-      // ══ HISTORY TAB ══
-      tab==="history" && React.createElement("div", { className:"fade-in" },
-        React.createElement("p", { style:{ fontSize:9, color:C.muted, letterSpacing:"0.25em", marginBottom:14 } },
-          `ÚLTIMAS SESIONES — ${histEntries.length} REGISTROS`
-        ),
-        histEntries.length===0 && React.createElement("div", { style:{ textAlign:"center", padding:"60px 0", color:"#2a2a2a" } },
-          React.createElement("p", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:36 } }, "SIN DATOS"),
-          React.createElement("p", { style:{ fontSize:11, marginTop:8 } }, "Completá tu primera sesión")
-        ),
-        ...histEntries.map(([id, e]) => {
-          const dc = ROUTINE[e.day]?.color || C.muted;
-          const logs = Object.entries(e.log||{});
-          return React.createElement("div", {
-            key:id,
-            style:{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${dc}`,
-              borderRadius:12, padding:14, marginBottom:9 }
-          },
-            React.createElement("div", { style:{ display:"flex", justifyContent:"space-between", marginBottom:9 } },
-              React.createElement("div", null,
-                React.createElement("p", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:dc, lineHeight:1 } }, e.day),
-                React.createElement("p", { style:{ fontSize:10, color:C.muted, marginTop:2 } }, e.date)
-              ),
-              React.createElement("div", { style:{ textAlign:"right" } },
-                React.createElement("p", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:"#fff", lineHeight:1 } }, logs.length),
-                React.createElement("p", { style:{ fontSize:8, color:"#3a3a3a" } }, "SERIES")
-              )
-            ),
-            React.createElement("div", { style:{ display:"flex", flexWrap:"wrap", gap:4 } },
-              ...logs.slice(0,8).map(([k,v]) =>
-                React.createElement("span", { key:k, style:{ fontSize:9, padding:"3px 7px", borderRadius:5, background:"#181818", color:"#666" } },
-                  `${v.reps}r×${v.weight}`)
-              ),
-              logs.length>8 && React.createElement("span", { key:"more", style:{ fontSize:9, color:"#333" } }, `+${logs.length-8}`)
-            )
-          );
-        }),
-        histEntries.length>0 && React.createElement("button", {
-          onClick: () => { if(confirm("¿Borrar todo el historial?")) setHistory({}); },
-          style:{ marginTop:10, width:"100%", padding:10, borderRadius:8,
-            background:"none", border:"1px solid #2a1a1a", color:"#555",
-            fontSize:9, letterSpacing:"0.2em", cursor:"pointer", fontFamily:"inherit" }
-        }, "BORRAR HISTORIAL")
-      ),
-
-      // ══ OVERVIEW TAB ══
-      tab==="overview" && React.createElement("div", { className:"fade-in" },
-        ...DAYS.map(d => {
-          const info = ROUTINE[d];
-          return React.createElement("div", { key:d, style:{ marginBottom:18 } },
-            React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:7, marginBottom:8 } },
-              React.createElement("div", { style:{ width:7, height:7, borderRadius:"50%", background:info.color } }),
-              React.createElement("p", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:15, color:info.color, letterSpacing:"0.08em" } },
-                `${d} — ${info.day}`)
-            ),
-            React.createElement("div", { style:{ display:"flex", flexDirection:"column", gap:4 } },
-              ...info.exercises.map(ex => {
-                const cur = weights[ex.id];
-                const gained = parseFloat((cur - ex.iw).toFixed(1));
-                return React.createElement("div", { key:ex.id,
-                  style:{ display:"flex", justifyContent:"space-between", alignItems:"center",
-                    background:C.card, border:`1px solid ${C.border}`, borderRadius:8, padding:"8px 12px" }
-                },
-                  React.createElement("p", { style:{ fontSize:11, color:"#777", flex:1 } }, ex.name),
-                  React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:8, flexShrink:0 } },
-                    gained>0 && React.createElement("span", { style:{ fontSize:9, color:"#4ade80" } }, `+${gained}`),
-                    React.createElement("span", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:info.color } }, cur),
-                    React.createElement("span", { style:{ fontSize:8, color:"#2a2a2a", width:42 } }, ex.unit)
-                  )
+        {/* WORKOUT VIEW */}
+        {view === "workout" && (
+          <>
+            {/* Day Selector */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "8px", marginBottom: "20px" }}>
+              {WEEK_DAYS.map(day => {
+                const d = ROUTINE[day];
+                const active = activeDay === day;
+                return (
+                  <button key={day} className="day-btn" onClick={() => { setActiveDay(day); setCompletedSets({}); setSessionLog({}); }} style={{
+                    padding: "10px 6px", borderRadius: "10px", textAlign: "center",
+                    background: active ? d.color : "#111",
+                    border: active ? `none` : "1px solid #1a1a1a",
+                    color: active ? "#000" : "#555",
+                  }}>
+                    <div style={{ fontSize: "8px", letterSpacing: "0.1em", marginBottom: "3px", fontWeight: 500 }}>{d.day.toUpperCase()}</div>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "14px", letterSpacing: "0.05em" }}>{day}</div>
+                  </button>
                 );
-              })
-            )
-          );
-        }),
+              })}
+            </div>
 
-        React.createElement("div", { style:{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, padding:14, marginTop:4 } },
-          React.createElement("p", { style:{ fontSize:9, color:C.muted, letterSpacing:"0.25em", marginBottom:10 } }, "PARÁMETROS"),
-          ...[
-            ["Técnica","3s bajar · 1s subir"],
-            ["RIR","1-2 primeras · 0-1 última"],
-            ["Compuestos","3 min descanso"],
-            ["Aislados","2 min descanso"],
-            ["Progresión","+2.5kg al llegar 12 reps S1"],
-            ["Descarga","Cada 6 semanas (2 series)"],
-            ["Semana",`#${weekNum}${isDeload?" ← DESCARGA":""}`],
-          ].map(([k,v]) =>
-            React.createElement("div", { key:k,
-              style:{ display:"flex", justifyContent:"space-between", paddingBottom:7,
-                borderBottom:`1px solid #141414`, marginBottom:7 }
-            },
-              React.createElement("span", { style:{ fontSize:10, color:"#3a3a3a" } }, k),
-              React.createElement("span", { style:{ fontSize:10, color: isDeload&&k==="Semana" ? "#F59E0B" : "#777" } }, v)
-            )
-          )
-        )
-      )
-    ),
+            {/* Progress bar */}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                <span style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2em" }}>PROGRESO SESIÓN</span>
+                <span style={{ fontSize: "10px", color: ROUTINE[activeDay].color }}>{doneSets}/{allSets} SERIES · {progress}%</span>
+              </div>
+              <div style={{ height: "3px", background: "#1a1a1a", borderRadius: "2px" }}>
+                <div style={{ height: "100%", width: `${progress}%`, background: ROUTINE[activeDay].color, borderRadius: "2px", transition: "width 0.5s ease" }} />
+              </div>
+            </div>
 
-    // ── BOTTOM NAV BAR ──
-    React.createElement("div", { style:{
-      position:"fixed", bottom:0, left:0, right:0, zIndex:50,
-      background:"rgba(10,10,15,0.95)", backdropFilter:"blur(16px)",
-      borderTop:`1px solid ${C.border}`,
-      paddingBottom:"env(safe-area-inset-bottom,8px)",
-      display:"flex", justifyContent:"center"
-    }},
-      React.createElement("div", { style:{ display:"flex", width:"100%", maxWidth:480 } },
-        ...[["workout","💪","Sesión"],["history","📋","Historial"],["overview","📊","Overview"]].map(([v,icon,l]) =>
-          React.createElement("button", {
-            key:v, onClick: () => setTab(v),
-            style:{ flex:1, padding:"10px 0 8px", border:"none", background:"none",
-              cursor:"pointer", fontFamily:"inherit", display:"flex", flexDirection:"column",
-              alignItems:"center", gap:3 }
-          },
-            React.createElement("span", { style:{ fontSize:18 } }, icon),
-            React.createElement("span", { style:{ fontSize:9, letterSpacing:"0.15em", color: tab===v ? dayColor : C.muted } }, l)
-          )
-        )
-      )
-    ),
+            {/* Exercises */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+              {dayExercises.map((ex, exIdx) => {
+                const setsArr = Array.from({ length: ex.sets }, (_, i) => i);
+                const allDone = setsArr.every(i => completedSets[`${ex.id}-${i}`]);
+                return (
+                  <div key={ex.id} className="exercise-row" style={{
+                    animationDelay: `${exIdx * 0.05}s`,
+                    background: allDone ? "#0d1a0d" : "#111",
+                    border: `1px solid ${allDone ? "#1a3a1a" : "#1a1a1a"}`,
+                    borderRadius: "12px", padding: "14px", transition: "all 0.3s"
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                      <div style={{ flex: 1, paddingRight: "10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                          <span style={{
+                            fontSize: "8px", padding: "2px 6px", borderRadius: "4px", letterSpacing: "0.1em",
+                            background: ex.type === "compuesto" ? "#1a1a3a" : "#1a1a1a",
+                            color: ex.type === "compuesto" ? "#6B8EFF" : "#555"
+                          }}>{ex.type.toUpperCase()}</span>
+                          {allDone && <span style={{ fontSize: "10px", color: "#4ade80" }}>✓</span>}
+                        </div>
+                        <p style={{ fontSize: "12px", color: allDone ? "#4ade80" : "#ccc", lineHeight: 1.4 }}>{ex.name}</p>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "20px", color: ROUTINE[activeDay].color, lineHeight: 1 }}>
+                          {weights[ex.id]}
+                        </p>
+                        <p style={{ fontSize: "8px", color: "#444", letterSpacing: "0.1em" }}>{ex.unit}</p>
+                      </div>
+                    </div>
 
-    // ── INSTALL MODAL ──
-    showInstall && React.createElement("div", {
-      className:"fade-in",
-      onClick: () => setShowInstall(false),
-      style:{ position:"fixed", inset:0, zIndex:200, background:"rgba(0,0,0,0.88)",
-        display:"flex", alignItems:"flex-end", justifyContent:"center" }
-    },
-      React.createElement("div", {
-        onClick: e => e.stopPropagation(),
-        className:"slide-up",
-        style:{ background:"#141414", borderRadius:"20px 20px 0 0", padding:"24px 20px 40px",
-          width:"100%", maxWidth:480, borderTop:"3px solid #FF6B35" }
-      },
-        React.createElement("p", { style:{ fontSize:10, color:"#FF6B35", letterSpacing:"0.25em", marginBottom:6 } }, "📲 INSTALAR APP"),
-        React.createElement("p", { style:{ fontSize:13, color:"#ddd", marginBottom:22, lineHeight:1.5 } },
-          "Seguí los pasos para tu dispositivo:"),
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      <span style={{ fontSize: "9px", color: "#444", letterSpacing: "0.15em", marginRight: "2px" }}>{ex.reps} REP</span>
+                      {setsArr.map(i => {
+                        const key = `${ex.id}-${i}`;
+                        const done = completedSets[key];
+                        const logData = sessionLog[key];
+                        return (
+                          <button key={i} className="set-btn" onClick={() => handleLogSet(ex.id, i)} style={{
+                            width: "44px", height: "36px", borderRadius: "7px", fontSize: "9px",
+                            border: done ? "none" : `1px solid #2a2a2a`,
+                            background: done ? ROUTINE[activeDay].color : "#1a1a1a",
+                            color: done ? "#000" : "#555", cursor: "pointer",
+                            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                            lineHeight: 1.2, fontFamily: "inherit"
+                          }}>
+                            {done ? (
+                              <>
+                                <span style={{ fontSize: "10px", fontWeight: 600 }}>{logData?.reps}</span>
+                                <span style={{ fontSize: "7px" }}>{logData?.weight}</span>
+                              </>
+                            ) : (
+                              <span style={{ letterSpacing: "0.1em" }}>S{i + 1}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                      <span style={{ fontSize: "9px", color: "#333", marginLeft: "auto" }}>
+                        {ex.type === "compuesto" ? "3' desc" : "2' desc"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-        // Android steps
-        React.createElement("div", { style:{ background:"#1a1a1a", borderRadius:10, padding:14, marginBottom:10 } },
-          React.createElement("p", { style:{ fontSize:10, color:"#FF6B35", letterSpacing:"0.15em", marginBottom:10 } }, "ANDROID (Chrome)"),
-          ...[
-            "1. Tocá los tres puntos ⋮ arriba a la derecha",
-            "2. Buscá \"Instalar app\" o \"Añadir a pantalla de inicio\"",
-            "3. Confirmá la instalación",
-            "4. Si no aparece: Ajustes → Agregar a pantalla de inicio"
-          ].map((s,i) => React.createElement("p", { key:i,
-            style:{ fontSize:11, color:"#888", marginBottom:6, lineHeight:1.4 } }, s))
-        ),
+            {/* Finish button */}
+            {doneSets > 0 && (
+              <button onClick={finishWorkout} style={{
+                width: "100%", padding: "16px", borderRadius: "12px", fontSize: "12px",
+                letterSpacing: "0.3em", textTransform: "uppercase",
+                background: ROUTINE[activeDay].color, color: "#000", border: "none", cursor: "pointer",
+                fontFamily: "inherit", fontWeight: 600, transition: "opacity 0.2s"
+              }}>
+                FINALIZAR ENTRENAMIENTO · {progress}%
+              </button>
+            )}
+          </>
+        )}
 
-        // iOS steps
-        React.createElement("div", { style:{ background:"#1a1a1a", borderRadius:10, padding:14, marginBottom:20 } },
-          React.createElement("p", { style:{ fontSize:10, color:"#4ECDC4", letterSpacing:"0.15em", marginBottom:10 } }, "IPHONE (Safari)"),
-          ...[
-            "1. Abrí esta página en Safari (no Chrome)",
-            "2. Tocá el botón compartir ↑ abajo en el centro",
-            "3. Tocá \"Agregar a pantalla de inicio\"",
-            "4. Tocá \"Agregar\" arriba a la derecha"
-          ].map((s,i) => React.createElement("p", { key:i,
-            style:{ fontSize:11, color:"#888", marginBottom:6, lineHeight:1.4 } }, s))
-        ),
+        {/* HISTORY VIEW */}
+        {view === "history" && (
+          <div>
+            <p style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2em", marginBottom: "16px" }}>
+              ÚLTIMAS SESIONES — {historyEntries.length} REGISTROS
+            </p>
+            {historyEntries.length === 0 && (
+              <div style={{ textAlign: "center", padding: "60px 0", color: "#333" }}>
+                <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "32px" }}>SIN DATOS</p>
+                <p style={{ fontSize: "11px", marginTop: "8px" }}>Completá tu primera sesión</p>
+              </div>
+            )}
+            {historyEntries.map(([id, entry]) => {
+              const dayColor = ROUTINE[entry.day]?.color || "#555";
+              const logs = Object.entries(entry.log || {});
+              return (
+                <div key={id} style={{
+                  background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px",
+                  padding: "14px", marginBottom: "10px", borderLeft: `3px solid ${dayColor}`
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <div>
+                      <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "18px", color: dayColor }}>{entry.day}</p>
+                      <p style={{ fontSize: "10px", color: "#555" }}>{entry.date}</p>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "22px", color: "#fff" }}>{logs.length}</p>
+                      <p style={{ fontSize: "9px", color: "#444" }}>SERIES</p>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                    {logs.slice(0, 6).map(([key, val]) => (
+                      <span key={key} style={{
+                        fontSize: "9px", padding: "3px 7px", borderRadius: "5px",
+                        background: "#1a1a1a", color: "#666", letterSpacing: "0.05em"
+                      }}>
+                        {val.reps}r × {val.weight}
+                      </span>
+                    ))}
+                    {logs.length > 6 && <span style={{ fontSize: "9px", color: "#444" }}>+{logs.length - 6} más</span>}
+                  </div>
+                </div>
+              );
+            })}
+            {historyEntries.length > 0 && (
+              <button onClick={() => { if (confirm("¿Borrar todo el historial?")) { setHistory({}); } }} style={{
+                marginTop: "10px", width: "100%", padding: "10px", borderRadius: "8px",
+                background: "none", border: "1px solid #2a1a1a", color: "#555", fontSize: "10px",
+                letterSpacing: "0.2em", cursor: "pointer", fontFamily: "inherit"
+              }}>BORRAR HISTORIAL</button>
+            )}
+          </div>
+        )}
 
-        React.createElement("button", {
-          onClick: () => {
-            if (deferredPrompt) {
-              deferredPrompt.prompt();
-              deferredPrompt.userChoice.then(() => { deferredPrompt = null; setShowInstall(false); });
-            } else {
-              setShowInstall(false);
-            }
-          },
-          style:{ width:"100%", padding:14, borderRadius:10, fontSize:11,
-            letterSpacing:"0.3em", textTransform:"uppercase",
-            background:"#FF6B35", color:"#000", border:"none", cursor:"pointer",
-            fontFamily:"inherit", fontWeight:600, marginBottom:10 }
-        }, deferredPrompt ? "INSTALAR AHORA" : "ENTENDIDO"),
+        {/* OVERVIEW VIEW */}
+        {view === "overview" && (
+          <div>
+            <p style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2em", marginBottom: "16px" }}>PESOS ACTUALES</p>
+            {WEEK_DAYS.map(day => {
+              const d = ROUTINE[day];
+              return (
+                <div key={day} style={{ marginBottom: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: d.color }} />
+                    <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "16px", color: d.color, letterSpacing: "0.1em" }}>
+                      {day} — {d.day}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    {d.exercises.map(ex => {
+                      const initial = ex.initialWeight;
+                      const current = weights[ex.id];
+                      const gained = current - initial;
+                      return (
+                        <div key={ex.id} style={{
+                          display: "flex", justifyContent: "space-between", alignItems: "center",
+                          background: "#111", borderRadius: "8px", padding: "8px 12px",
+                          border: "1px solid #1a1a1a"
+                        }}>
+                          <p style={{ fontSize: "11px", color: "#888", flex: 1 }}>{ex.name}</p>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                            {gained > 0 && (
+                              <span style={{ fontSize: "9px", color: "#4ade80", letterSpacing: "0.1em" }}>+{gained.toFixed(1)}</span>
+                            )}
+                            <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "18px", color: d.color }}>
+                              {current}
+                            </span>
+                            <span style={{ fontSize: "8px", color: "#333" }}>{ex.unit}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
-        React.createElement("button", {
-          onClick: () => setShowInstall(false),
-          style:{ width:"100%", padding:10, borderRadius:10, fontSize:10,
-            letterSpacing:"0.2em", background:"none", color:C.muted,
-            border:"1px solid #2a2a2a", cursor:"pointer", fontFamily:"inherit" }
-        }, "Cerrar")
-      )
-    ),
+            <div style={{
+              marginTop: "20px", background: "#111", border: "1px solid #1a1a1a",
+              borderRadius: "12px", padding: "14px"
+            }}>
+              <p style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2em", marginBottom: "10px" }}>PARÁMETROS</p>
+              {[
+                ["Técnica", "3s bajar · 1s subir"],
+                ["RIR", "1-2 primeras · 0-1 última"],
+                ["Compuestos", "3 min descanso"],
+                ["Aislados", "2 min descanso"],
+                ["Progresión", "+2.5kg al llegar a 12 reps S1"],
+                ["Descarga", "Cada 6 semanas (2 series)"],
+                ["Semana actual", `#${weekCount}${isDeloadWeek ? " ← DESCARGA" : ""}`],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: "flex", justifyContent: "space-between", paddingBottom: "7px", borderBottom: "1px solid #161616", marginBottom: "7px" }}>
+                  <span style={{ fontSize: "10px", color: "#444" }}>{k}</span>
+                  <span style={{ fontSize: "10px", color: isDeloadWeek && k === "Semana actual" ? "#F59E0B" : "#888" }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
-    // ── LOG MODAL ──
-    logging && React.createElement(LogModal, {
-      ex: logging.ex, setIdx: logging.setIdx,
-      color: dayColor, currentWeight: weights[logging.exId],
-      onConfirm: confirmLog, onClose: () => setLogging(null)
-    }),
+      {/* Log Modal */}
+      {logging && (() => {
+        const ex = Object.values(ROUTINE).flatMap(r => r.exercises).find(e => e.id === logging.exId);
+        return (
+          <div style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "flex-end", justifyContent: "center"
+          }} onClick={() => setLogging(null)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: "#141414", borderRadius: "20px 20px 0 0", padding: "24px",
+              width: "100%", maxWidth: "480px", borderTop: `3px solid ${ROUTINE[activeDay].color}`,
+              animation: "slideIn 0.2s ease"
+            }}>
+              <p style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2em", marginBottom: "4px" }}>
+                SERIE {logging.setIdx + 1} · {ex.type.toUpperCase()}
+              </p>
+              <p style={{ fontSize: "14px", color: "#ddd", marginBottom: "20px" }}>{ex.name}</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+                <div>
+                  <label style={{ fontSize: "9px", color: "#555", letterSpacing: "0.2em", display: "block", marginBottom: "6px" }}>
+                    PESO ({ex.unit})
+                  </label>
+                  <input
+                    type="number" value={logInput.weight}
+                    onChange={e => setLogInput(p => ({ ...p, weight: e.target.value }))}
+                    style={{
+                      width: "100%", padding: "12px", borderRadius: "8px", fontSize: "20px",
+                      fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em",
+                      background: "#1a1a1a", border: `1px solid ${ROUTINE[activeDay].color}44`,
+                      color: ROUTINE[activeDay].color, textAlign: "center", outline: "none"
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "9px", color: "#555", letterSpacing: "0.2em", display: "block", marginBottom: "6px" }}>
+                    REPS ({ex.reps})
+                  </label>
+                  <input
+                    type="number" value={logInput.reps} autoFocus
+                    onChange={e => setLogInput(p => ({ ...p, reps: e.target.value }))}
+                    onKeyDown={e => e.key === "Enter" && confirmLog()}
+                    style={{
+                      width: "100%", padding: "12px", borderRadius: "8px", fontSize: "20px",
+                      fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em",
+                      background: "#1a1a1a", border: "1px solid #2a2a2a",
+                      color: "#fff", textAlign: "center", outline: "none"
+                    }}
+                  />
+                </div>
+              </div>
+              <button onClick={confirmLog} style={{
+                width: "100%", padding: "14px", borderRadius: "10px", fontSize: "11px",
+                letterSpacing: "0.3em", textTransform: "uppercase",
+                background: ROUTINE[activeDay].color, color: "#000", border: "none",
+                cursor: "pointer", fontFamily: "inherit", fontWeight: 600
+              }}>
+                CONFIRMAR SERIE
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
-    // ── TOAST ──
-    toast && React.createElement("div", {
-      className:"toast-anim",
-      style:{
-        position:"fixed", bottom:90, right:14, zIndex:300,
-        background: toast.type==="progress" ? "#0d1f0d" : "#12121f",
-        border:`1px solid ${toast.type==="progress" ? "#4ade80" : "#6B8EFF"}`,
-        borderRadius:10, padding:"11px 14px", maxWidth:260,
-        fontSize:11, color: toast.type==="progress" ? "#4ade80" : "#aaa", lineHeight:1.4
-      }
-    }, toast.msg)
+      {/* Toast */}
+      {toast && (
+        <div className="toast" style={{
+          position: "fixed", bottom: "100px", right: "16px", zIndex: 200,
+          background: toast.type === "progress" ? "#1a2e1a" : "#1a1a2e",
+          border: `1px solid ${toast.type === "progress" ? "#4ade80" : "#6B8EFF"}`,
+          borderRadius: "10px", padding: "12px 16px", maxWidth: "260px",
+          fontSize: "11px", color: toast.type === "progress" ? "#4ade80" : "#aaa",
+          lineHeight: 1.4
+        }}>
+          {toast.msg}
+        </div>
+      )}
+    </div>
   );
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
-
-// ── SERVICE WORKER ──
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
-
-// ── PWA INSTALL BANNER ──
-let deferredPrompt = null;
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-
-  // Show install banner if not already installed
-  if (!window.matchMedia("(display-mode: standalone)").matches) {
-    showInstallBanner();
-  }
-});
-
-function showInstallBanner() {
-  if (document.getElementById("install-banner")) return;
-
-  const banner = document.createElement("div");
-  banner.id = "install-banner";
-  banner.style.cssText = `
-    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-    z-index: 9999; width: calc(100% - 32px); max-width: 448px;
-    background: #1a1a1a; border: 1px solid #FF6B35;
-    border-radius: 14px; padding: 14px 16px;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    animation: slideUp 0.3s ease;
-    font-family: 'DM Mono', monospace;
-  `;
-
-  banner.innerHTML = `
-    <div style="flex:1">
-      <p style="font-size:11px; color:#FF6B35; letter-spacing:0.2em; margin-bottom:3px">INSTALAR APP</p>
-      <p style="font-size:11px; color:#888; line-height:1.4">Agregá el tracker a tu pantalla de inicio para usarlo sin el navegador</p>
-    </div>
-    <div style="display:flex; flex-direction:column; gap:6px; flex-shrink:0">
-      <button id="install-btn" style="
-        padding: 9px 16px; border-radius: 8px; font-size: 10px;
-        letter-spacing: 0.2em; background: #FF6B35; color: #000;
-        border: none; cursor: pointer; font-family: inherit; font-weight: 600;
-      ">INSTALAR</button>
-      <button id="dismiss-btn" style="
-        padding: 6px 16px; border-radius: 8px; font-size: 10px;
-        letter-spacing: 0.1em; background: none; color: #555;
-        border: 1px solid #2a2a2a; cursor: pointer; font-family: inherit;
-      ">Ahora no</button>
-    </div>
-  `;
-
-  document.body.appendChild(banner);
-
-  document.getElementById("install-btn").addEventListener("click", async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    banner.remove();
-  });
-
-  document.getElementById("dismiss-btn").addEventListener("click", () => {
-    banner.remove();
-  });
-}
-
-// Show banner if prompt already fired before React mounted
-window.addEventListener("appinstalled", () => {
-  const banner = document.getElementById("install-banner");
-  if (banner) banner.remove();
-  deferredPrompt = null;
-});
-</script>
-</body>
-</html>
