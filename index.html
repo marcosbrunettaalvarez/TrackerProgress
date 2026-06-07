@@ -40,57 +40,54 @@ const C = {
   text: "#E8E8F0", muted: "#555", dim: "#333",
 };
 
+// ─── RUTINA ACTUALIZADA SEGÚN PDF ────────────────────────────────────
 const ROUTINE = {
   "Upper A": {
     day: "Lunes", color: "#FF6B35",
     exercises: [
-      { id:"ua1", name:"Press inclinado mancuernas 30°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ua2", name:"Jalón agarre prono amplio", sets:3, reps:"10-12", iw:15, unit:"discos", type:"comp" },
-      { id:"ua3", name:"Press militar mancuernas 80°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ua4", name:"Remo barra T agarre prono", sets:3, reps:"10-12", iw:55, unit:"kg total", type:"comp" },
-      { id:"ua5", name:"Aperturas banco plano 0°", sets:2, reps:"10-12", iw:15, unit:"kg/manc", type:"aisl" },
-      { id:"ua6", name:"Elevaciones laterales", sets:3, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
-      { id:"ua7", name:"Curl araña mancuernas 45°", sets:3, reps:"10-12", iw:15, unit:"kg/manc", type:"aisl" },
-      { id:"ua8", name:"Extensión tríceps overhead polea", sets:3, reps:"10-12", iw:10, unit:"discos", type:"aisl" },
+      { id:"ua1", name:"Press inclinado mancuernas banco 30°", sets:3, reps:"10-12", iw:25,   unit:"kg/manc", type:"comp" },
+      { id:"ua2", name:"Jalón al pecho agarre prono amplio",   sets:3, reps:"10-12", iw:15,   unit:"discos",  type:"comp" },
+      { id:"ua3", name:"Press militar mancuernas banco 80°",   sets:3, reps:"10-12", iw:25,   unit:"kg/manc", type:"comp" },
+      { id:"ua4", name:"Remo barra T agarre prono",            sets:3, reps:"10-12", iw:55,   unit:"kg total",type:"comp" },
+      { id:"ua5", name:"Aperturas inclinadas mancuernas 30°",  sets:3, reps:"10-12", iw:17.5, unit:"kg/manc", type:"aisl" },
+      { id:"ua6", name:"Elevaciones laterales",                sets:3, reps:"12-15", iw:12.5, unit:"kg/manc", type:"aisl" },
+      { id:"ua7", name:"Pájaros mancuernas banco 45° neutro",  sets:3, reps:"12-15", iw:15,   unit:"kg/manc", type:"aisl" },
     ]
   },
   "Lower A": {
     day: "Miércoles", color: "#4ECDC4",
     exercises: [
-      { id:"la1", name:"Sentadilla búlgara mancuernas", sets:3, reps:"10-12", iw:20, unit:"kg/manc", type:"comp" },
-      { id:"la2", name:"Hip thrust con barra", sets:3, reps:"10-12", iw:90, unit:"kg total", type:"comp" },
-      { id:"la3", name:"Extensión cuádriceps máquina", sets:3, reps:"10-12", iw:9, unit:"discos", type:"aisl" },
-      { id:"la4", name:"Curl femoral sentado", sets:3, reps:"10-12", iw:13, unit:"discos", type:"aisl" },
-      { id:"la5", name:"Elevación de gemelos con barra", sets:3, reps:"12-15", iw:125, unit:"kg total", type:"comp" },
-      { id:"la6", name:"Crunch cuerda polea alta", sets:3, reps:"12-15", iw:15, unit:"discos", type:"aisl" },
-      { id:"la7", name:"Curl de muñeca detrás espalda", sets:3, reps:"12-15", iw:40, unit:"kg total", type:"aisl" },
-      { id:"la8", name:"Pájaros banco inclinado 45°", sets:2, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
+      { id:"la1", name:"Sentadilla búlgara mancuernas",              sets:3, reps:"10-12", iw:25,  unit:"kg/manc", type:"comp" },
+      { id:"la2", name:"Hip thrust barra recta",                     sets:3, reps:"10-12", iw:90,  unit:"kg total",type:"comp" },
+      { id:"la3", name:"Extensión cuádriceps máquina",               sets:3, reps:"10-12", iw:10,  unit:"discos",  type:"aisl" },
+      { id:"la4", name:"Curl femoral sentado máquina",               sets:3, reps:"10-12", iw:13,  unit:"discos",  type:"aisl" },
+      { id:"la5", name:"Elevación de gemelos barra parado",          sets:3, reps:"12-15", iw:140, unit:"kg total",type:"comp" },
+      { id:"la6", name:"Curl araña mancuernas banco 45°",            sets:3, reps:"10-12", iw:15,  unit:"kg/manc", type:"aisl" },
+      { id:"la7", name:"Extensión overhead barra prono banco 90° polea baja", sets:3, reps:"10-12", iw:10, unit:"discos", type:"aisl" },
     ]
   },
   "Upper B": {
     day: "Viernes", color: "#A855F7",
     exercises: [
-      { id:"ub1", name:"Press militar mancuernas 80°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ub2", name:"Jalón agarre supino cerrado", sets:3, reps:"10-12", iw:15, unit:"discos", type:"comp" },
-      { id:"ub3", name:"Press plano mancuernas 0°", sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
-      { id:"ub4", name:"Remo barra T agarre V semi-neutro", sets:3, reps:"10-12", iw:55, unit:"kg total", type:"comp" },
-      { id:"ub5", name:"Aperturas banco inclinado 30°", sets:2, reps:"10-12", iw:15, unit:"kg/manc", type:"aisl" },
-      { id:"ub6", name:"Elevaciones laterales", sets:3, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
-      { id:"ub7", name:"Curl bíceps inclinado 45°", sets:3, reps:"10-12", iw:17.5, unit:"kg/manc", type:"aisl" },
-      { id:"ub8", name:"Extensión tríceps pushdown 45°", sets:3, reps:"10-12", iw:11, unit:"discos", type:"aisl" },
+      { id:"ub1", name:"Press militar máquina",                      sets:3, reps:"10-12", iw:65, unit:"kg máq",  type:"comp" },
+      { id:"ub2", name:"Jalón al pecho agarre supino cerrado",       sets:3, reps:"10-12", iw:15, unit:"discos",  type:"comp" },
+      { id:"ub3", name:"Press plano mancuernas 0°",                  sets:3, reps:"10-12", iw:25, unit:"kg/manc", type:"comp" },
+      { id:"ub4", name:"Remo polea baja agarre V neutro amplio",     sets:3, reps:"10-12", iw:15, unit:"discos",  type:"comp" },
+      { id:"ub5", name:"Cruces polea baja banco 30°",                sets:3, reps:"10-12", iw:4,  unit:"discos/c",type:"aisl" },
+      { id:"ub6", name:"Elevaciones laterales unilateral polea baja",sets:3, reps:"12-15", iw:2,  unit:"discos",  type:"aisl" },
+      { id:"ub7", name:"Face pull cuerda agarre neutro polea alta",  sets:3, reps:"12-15", iw:10, unit:"discos",  type:"aisl" },
     ]
   },
   "Lower B": {
-    day: "Domingo", color: "#F59E0B",
+    day: "Sábado", color: "#F59E0B",
     exercises: [
-      { id:"lb1", name:"Hip thrust con barra", sets:3, reps:"10-12", iw:90, unit:"kg total", type:"comp" },
-      { id:"lb2", name:"Sentadilla búlgara mancuernas", sets:3, reps:"10-12", iw:20, unit:"kg/manc", type:"comp" },
-      { id:"lb3", name:"Curl femoral tumbado", sets:3, reps:"10-12", iw:10, unit:"discos", type:"aisl" },
-      { id:"lb4", name:"Extensión cuádriceps máquina", sets:3, reps:"10-12", iw:9, unit:"discos", type:"aisl" },
-      { id:"lb5", name:"Elevación de gemelos con barra", sets:3, reps:"12-15", iw:125, unit:"kg total", type:"comp" },
-      { id:"lb6", name:"Crunch cuerda polea alta", sets:3, reps:"12-15", iw:15, unit:"discos", type:"aisl" },
-      { id:"lb7", name:"Curl de muñeca invertido sentado", sets:3, reps:"12-15", iw:20, unit:"kg total", type:"aisl" },
-      { id:"lb8", name:"Pájaros banco inclinado 45°", sets:2, reps:"12-15", iw:10, unit:"kg/manc", type:"aisl" },
+      { id:"lb1", name:"Peso muerto rumano barra recta",             sets:3, reps:"10-12", iw:90,   unit:"kg total",type:"comp" },
+      { id:"lb2", name:"Sentadilla búlgara mancuernas",              sets:3, reps:"10-12", iw:25,   unit:"kg/manc", type:"comp" },
+      { id:"lb3", name:"Curl femoral tumbado máquina",               sets:3, reps:"10-12", iw:11,   unit:"discos",  type:"aisl" },
+      { id:"lb4", name:"Extensión cuádriceps máquina",               sets:3, reps:"10-12", iw:10,   unit:"discos",  type:"aisl" },
+      { id:"lb5", name:"Elevación de gemelos barra parado",          sets:3, reps:"12-15", iw:140,  unit:"kg total",type:"comp" },
+      { id:"lb6", name:"Curl inclinado mancuernas banco 45°",        sets:3, reps:"10-12", iw:17.5, unit:"kg/manc", type:"aisl" },
+      { id:"lb7", name:"Extensión pushdown barra recta 45° polea alta", sets:3, reps:"10-12", iw:11, unit:"discos", type:"aisl" },
     ]
   }
 };
@@ -233,7 +230,7 @@ function App() {
   const [weekNum, setWeekNum] = useState(() => ls("ft_week", 1));
   const [sessionLog, setSessionLog] = useState({});
   const [completedSets, setCompletedSets] = useState({});
-  const [logging, setLogging] = useState(null); // { exId, setIdx }
+  const [logging, setLogging] = useState(null);
   const [toast, setToast] = useState(null);
 
   useEffect(() => { lss("ft_weights", weights); }, [weights]);
@@ -284,7 +281,6 @@ function App() {
 
   const histEntries = Object.entries(history).sort((a,b) => b[0]-a[0]).slice(0,30);
 
-  // ── RENDER ──
   return React.createElement("div", {
     style:{ minHeight:"100vh", background:C.bg, position:"relative", overflow:"hidden" }
   },
@@ -545,7 +541,6 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 
-// ── SERVICE WORKER ──
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
